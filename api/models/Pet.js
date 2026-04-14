@@ -8,25 +8,30 @@ const Pet = db.define('Pet', {
     },
     age: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     weight: {
-        type: DataTypes.FLOAT, // melhor para peso com decimal
-        allowNull: false
+        type: DataTypes.DECIMAL(5, 2),
+        allowNull: true
     },
     color: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     images: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
+        defaultValue: '[]',
         get() {
             const rawValue = this.getDataValue('images');
-            return rawValue ? JSON.parse(rawValue) : [];
+            try {
+                return rawValue ? JSON.parse(rawValue) : [];
+            } catch {
+                return [];
+            }
         },
         set(value) {
-            this.setDataValue('images', JSON.stringify(value));
+            this.setDataValue('images', JSON.stringify(value || []));
         }
     },
     available: {
@@ -34,6 +39,9 @@ const Pet = db.define('Pet', {
         defaultValue: true,
         allowNull: false
     }
+}, {
+    tableName: 'pets',
+    timestamps: true
 });
 
 module.exports = Pet;

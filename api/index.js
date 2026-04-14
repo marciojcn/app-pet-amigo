@@ -4,7 +4,11 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./db/conn');
 
-// Models (apenas carregar)
+// Swagger
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
+
+// Models
 require('./models/User');
 require('./models/Pet');
 
@@ -16,13 +20,16 @@ const api = express();
 // JSON
 api.use(express.json());
 
-// CORS aberto (qualquer IP do universo 🌎)
+// CORS (ajustável depois para produção)
 api.use(cors());
 
 // Pasta pública
 api.use('/public', express.static('public'));
 
-// Rota base (IMPORTANTE)
+// Swagger
+api.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Rota base
 api.get('/', (req, res) => {
     res.json({
         status: 'API ONLINE 🚀',
@@ -33,27 +40,27 @@ api.get('/', (req, res) => {
 // Rotas
 api.use('/users', UserRoutes);
 
-const PORT = process.env.PORT || 4040;
-
-// Banco + servidor
-db.sync()
-    .then(() => {
-        console.log('Banco conectado com sucesso');
-
-        api.listen(PORT, '0.0.0.0', () => {
-            console.log(`Servidor rodando na porta ${PORT}`);
-            console.log(`Acesso local: http://localhost:${PORT}`);
-            console.log(`Acesso rede: http://SEU_IP:${PORT}`);
-        });
-    })
-    .catch(error => {
-        console.error("Erro ao conectar/sincronizar banco:", error);
-    });
-
-// Tratamento de erro simples
+// Middleware de erro global (deve ficar antes do listen)
 api.use((err, req, res, next) => {
     console.error('Erro:', err);
     res.status(500).json({
         error: 'Erro interno no servidor'
     });
 });
+
+const PORT = process.env.PORT || 4040;
+
+// Banco + servidor
+db.authenticate()
+    .then(() => {
+        console.log('Banco conectado com sucesso 🚀');
+
+        api.listen(PORT, '0.0.0.0', () => {
+            console.log(`Servidor rodando na porta ${PORT}`);
+            console.log(`Swagger: http://localhost:${PORT}/api-docs`);
+        });
+    })
+    .catch(error => {
+        console.error("Erro ao conectar banco:", error);
+        process.exit(1);
+    });

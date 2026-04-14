@@ -1,23 +1,25 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
 const createUserToken = (user, req, res) => {
     try {
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET não definido nas variáveis de ambiente');
+        }
+
         const token = jwt.sign(
-            {
-                name: user.name,
-                id: user.id
-            },
+            { id: user.id },
             process.env.JWT_SECRET,
-            {
-                expiresIn: '7d' // expira em 7 dias (ótimo pra teste)
-            }
+            { expiresIn: '7d' }
         );
 
         return res.status(200).json({
-            message: "Você está autenticado",
+            message: "Login realizado com sucesso",
             token,
-            userId: user.id
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
         });
 
     } catch (error) {

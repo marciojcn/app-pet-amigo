@@ -10,12 +10,17 @@ module.exports = class UserController {
             const { name, email, password, confirmpassword, phone } = req.body;
 
             // Validações
-            if (!name || !email || !password || !phone) {
+            if (!name || !email || !password || !confirmpassword || !phone) {
                 return res.status(422).json({ message: "Preencha todos os campos obrigatórios" });
             }
 
             if (password !== confirmpassword) {
                 return res.status(422).json({ message: "A senha e a confirmação precisam ser iguais" });
+            }
+
+            // Validação mínima de senha
+            if (password.length < 6) {
+                return res.status(422).json({ message: "A senha deve ter no mínimo 6 caracteres" });
             }
 
             // Verifica usuário existente
@@ -37,7 +42,7 @@ module.exports = class UserController {
             });
 
             // Token
-            return await createUserToken(newUser, req, res);
+            return createUserToken(newUser, req, res);
 
         } catch (error) {
             console.error('Erro no register:', error);
@@ -57,16 +62,16 @@ module.exports = class UserController {
             const user = await User.findOne({ where: { email } });
 
             if (!user) {
-                return res.status(422).json({ message: "Usuário não encontrado" });
+                return res.status(404).json({ message: "Usuário não encontrado" });
             }
 
             const checkPassword = await bcrypt.compare(password, user.password);
 
             if (!checkPassword) {
-                return res.status(422).json({ message: "Senha inválida" });
+                return res.status(401).json({ message: "Senha inválida" });
             }
 
-            return await createUserToken(user, req, res);
+            return createUserToken(user, req, res);
 
         } catch (error) {
             console.error('Erro no login:', error);

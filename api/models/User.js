@@ -11,7 +11,7 @@ const User = db.define('User', {
         allowNull: false,
         unique: true,
         validate: {
-            isEmail: true // valida formato automaticamente
+            isEmail: true
         }
     },
     password: {
@@ -21,14 +21,15 @@ const User = db.define('User', {
     image: {
         type: DataTypes.STRING,
         allowNull: true,
-        defaultValue: '' // evita null no frontend
+        defaultValue: null
     },
     phone: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(20),
         allowNull: false
     }
 }, {
-    tableName: 'users' // garante nome correto no banco
+    tableName: 'users',
+    timestamps: true
 });
 
 module.exports = User;
