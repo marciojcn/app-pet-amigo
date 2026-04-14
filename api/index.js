@@ -14,6 +14,7 @@ require('./models/Pet');
 
 // Routes
 const UserRoutes = require('./routes/UserRoutes');
+const PetRoutes  = require('./routes/PetRoutes');
 
 const api = express();
 
@@ -23,7 +24,7 @@ api.use(express.json());
 // CORS (ajustável depois para produção)
 api.use(cors());
 
-// Pasta pública
+// Pasta pública (imagens acessíveis via URL)
 api.use('/public', express.static('public'));
 
 // Swagger
@@ -39,12 +40,13 @@ api.get('/', (req, res) => {
 
 // Rotas
 api.use('/users', UserRoutes);
+api.use('/pets',  PetRoutes);
 
-// Middleware de erro global (deve ficar antes do listen)
+// Middleware de erro global
 api.use((err, req, res, next) => {
     console.error('Erro:', err);
     res.status(500).json({
-        error: 'Erro interno no servidor'
+        error: err.message || 'Erro interno no servidor'
     });
 });
 
@@ -61,6 +63,6 @@ db.authenticate()
         });
     })
     .catch(error => {
-        console.error("Erro ao conectar banco:", error);
+        console.error('Erro ao conectar banco:', error);
         process.exit(1);
     });
